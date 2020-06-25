@@ -69,6 +69,12 @@ class image_denoiser():
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
         plt.show()
+        
+    def export_weights(self):
+        self.autoencoder.save_weights(self.name)
+
+    def import_weights(self, name):
+        self.autoencoder.load_weights(name)
 
     def set_name(self, name):
         self.name = name
