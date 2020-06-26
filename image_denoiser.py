@@ -27,7 +27,7 @@ class image_denoiser():
         self.autoencoder = autoencoder
 
 
-    def fit(self, train_noisy, train, val_noisy = None, val = None, epochs = 100, batch_size = 128, shuffle = True):
+    def fit(self, train_noisy, train, val_noisy = None, val = None, epochs = 100, batch_size = 128):
         train = np.reshape(train, (len(train), self.image_dimension, self.image_dimension, 1))
         train_noisy = np.reshape(train_noisy, (len(train_noisy), self.image_dimension, self.image_dimension, 1))
         if val_noisy is None or val is None:
