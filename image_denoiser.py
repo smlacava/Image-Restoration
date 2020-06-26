@@ -49,7 +49,7 @@ class image_denoiser():
     def predict(self, test_noisy, test = None, n = None):
         test = np.reshape(test, (len(test), self.image_dimension, self.image_dimension, 1))
         test_noisy = np.reshape(test_noisy, (len(test_noisy), self.image_dimension, self.image_dimension, 1))
-        decoded_imgs = self.autoencoder.predict(test)
+        decoded_imgs = self.autoencoder.predict(test_noisy)
         if not(n is None or test is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
 
