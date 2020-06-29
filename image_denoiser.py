@@ -62,6 +62,12 @@ class image_denoiser():
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.show()
+        
+        plt.plot(history.history['val_loss'])
+        plt.title('Val loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.show()
 
     def predict(self, test_noisy, test = None, n = None):
         if not(test is None):
