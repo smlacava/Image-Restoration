@@ -1,18 +1,15 @@
 from keras.datasets import mnist
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
-from keras.models import Model
+from keras.models import Model, load_model
 from keras.callbacks import TensorBoard
-from tensorflow.keras.callbacks import EarlyStopping
-from keras.callbacks import ModelCheckpoint
-from keras.models import load_model
-
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras import backend as K
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 class image_denoiser():
-    def __init__(self, name = 'Image_Denoiser'):
+    def __init__(self, name='Image_Denoiser'):
         self.image_dimension = 28
         self.name = name
         self.encoding_dim = 32
@@ -33,53 +30,67 @@ class image_denoiser():
         autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
         return autoencoder
 
-    def fit(self, train_noisy, train, val_noisy = None, val = None, epochs = 100, batch_size = 128):
+    def fit(self, train_noisy, train, val_noisy=None, val=None, epochs=100, batch_size=128):
         train = self._preprocessing(train)
         train_noisy = self._preprocessing(train_noisy)
         if val_noisy is None and val is None:
+            check = 0
             history = self.autoencoder.fit(train_noisy, train,
-                        epochs = epochs,
-                        batch_size = batch_size,
-                        shuffle = True,
-                        callbacks = [TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False)])
+                                           epochs=epochs,
+                                           batch_size=batch_size,
+                                           shuffle=True,
+                                           callbacks=[
+                                               TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False)])
         elif isinstance(val_noisy, float):
+            check = 1
             history = self.autoencoder.fit(train_noisy, train,
-                        epochs = epochs,
-                        batch_size = batch_size,
-                        validation_split = val_noisy,
-                        shuffle = True,
-                        callbacks = [TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                     EarlyStopping(monitor='val_loss', patience=3),
-                                    ModelCheckpoint('/content/best_model.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)])
+                                           epochs=epochs,
+                                           batch_size=batch_size,
+                                           validation_split=val_noisy,
+                                           shuffle=True,
+                                           callbacks=[
+                                               TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
+                                               EarlyStopping(monitor='val_loss', patience=3),
+                                               ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
+                                                               verbose=1, save_best_only=True)])
         else:
+            check = 1
             val = self._preprocessing(val)
             val_noisy = self._preprocessing(val_noisy)
             history = self.autoencoder.fit(train_noisy, train,
-                            epochs = epochs,
-                            batch_size = batch_size,
-                            shuffle = True,
-                            validation_data = (val_noisy, val),
-                            callbacks = [TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                         EarlyStopping(monitor='val_loss', patience=3),
-                                         ModelCheckpoint('/content/best_model.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)])
+                                           epochs=epochs,
+                                           batch_size=batch_size,
+                                           shuffle=True,
+                                           validation_data=(val_noisy, val),
+                                           callbacks=[
+                                               TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
+                                               EarlyStopping(monitor='val_loss', patience=3),
+                                               ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
+                                                               verbose=1, save_best_only=True)])
+        if check == 1:
+            self.autoencoder = load_model('/tmp/checkpoint')
+            plt.plot(range(1, len(history.history['loss']) + 1), history.history['loss'],
+                     range(1, len(history.history['val_loss']) + 1), history.history['val_loss'])
+            plt.title('Loss Curves')
+            plt.ylabel('Loss')
+            plt.xlabel('Epoch')
+            plt.legend(['Model', 'Validation'])
+            plt.show()
+        else:
+            plt.plot(range(1, len(history.history['loss']) + 1), history.history['loss'])
+            plt.title('Model Loss')
+            plt.ylabel('Loss')
+            plt.xlabel('Epoch')
+            plt.show()
 
-        
-        self.autoencoder=load_model('/content/best_model.h5')
-        plt.plot(range(len(history.history['loss'])),history.history['loss'],range(len(history.history['val_loss'])),history.history['val_loss'])
-        plt.title('Loss Curves')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Model','Validation'])
-        plt.show()
 
-    def predict(self, test_noisy, test = None, n = None):
-        if not(test is None):
+    def predict(self, test_noisy, test=None, n=None):
+        if not (test is None):
             test = self._preprocessing(test)
         test_noisy = self._preprocessing(test_noisy)
         decoded_imgs = self.autoencoder.predict(test_noisy)
-        if not(n is None or test is None):
+        if not (n is None or test is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
-
 
     def _plot_results(self, n, test_noisy, test, decoded_imgs):
         for i in range(n):
@@ -107,7 +118,7 @@ class image_denoiser():
 
     def _preprocessing(self, data):
         data = np.reshape(data, (len(data), self.image_dimension, self.image_dimension, 1))
-        return data.astype('float32')/data.max()
+        return data.astype('float32') / data.max()
 
     def set_name(self, name):
         self.name = name
@@ -118,9 +129,8 @@ class image_denoiser():
     def import_weights(self, name):
         self.autoencoder.load_weights(name)
 
+
 (x_train, _), (x_test, _) = mnist.load_data()
-
-
 
 noise_factor = 0.5
 x_train_noisy = x_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_train.shape)
@@ -129,8 +139,7 @@ x_test_noisy = x_test + noise_factor * np.random.normal(loc=0.0, scale=1.0, size
 x_train_noisy = np.clip(x_train_noisy, 0., 1.)
 x_test_noisy = np.clip(x_test_noisy, 0., 1.)
 
-
 ID = image_denoiser('prova')
-ID.fit(x_train_noisy, x_train, 0.1, epochs = 200, batch_size = 128)
+ID.fit(x_train_noisy, x_train, 0.1, epochs=2, batch_size=128)
 ID.predict(x_test_noisy, x_test, 10)
 ID.set_name('D:\Magistrale\Corsi\Machine Learning\prova2')
