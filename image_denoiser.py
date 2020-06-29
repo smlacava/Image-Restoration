@@ -3,6 +3,9 @@ from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from keras.callbacks import TensorBoard
 from tensorflow.keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
+
 from keras import backend as K
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,7 +49,8 @@ class image_denoiser():
                         validation_split = val_noisy,
                         shuffle = True,
                         callbacks = [TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                     EarlyStopping(monitor='val_loss', patience=3)])
+                                     EarlyStopping(monitor='val_loss', patience=3),
+                                    ModelCheckpoint('/content/best_model.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)])
         else:
             val = self._preprocessing(val)
             val_noisy = self._preprocessing(val_noisy)
@@ -56,17 +60,16 @@ class image_denoiser():
                             shuffle = True,
                             validation_data = (val_noisy, val),
                             callbacks = [TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                         EarlyStopping(monitor='val_loss', patience=3)])
-        plt.plot(history.history['loss'])
-        plt.title('Model loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.show()
+                                         EarlyStopping(monitor='val_loss', patience=3),
+                                         ModelCheckpoint('/content/best_model.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)])
+
         
-        plt.plot(history.history['val_loss'])
-        plt.title('Val loss')
+        self.autoencoder=load_model('/content/best_model.h5')
+        plt.plot(range(len(history.history['loss'])),history.history['loss'],range(len(history.history['val_loss'])),history.history['val_loss'])
+        plt.title('Loss Curves')
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
+        plt.legend(['Model','Validation'])
         plt.show()
 
     def predict(self, test_noisy, test = None, n = None):
