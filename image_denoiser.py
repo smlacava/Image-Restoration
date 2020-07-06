@@ -55,7 +55,7 @@ class image_denoiser():
                            between 128 and the total number of training samples by default)
         """
         
-        self.image_dimension=x_train.shape[1:]
+        self.image_dimension=train.shape[1:]
         self.autoencoder = self.autoencoder_creation()
         
         train = self._preprocessing(train)
