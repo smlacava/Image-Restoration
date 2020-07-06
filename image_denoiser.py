@@ -62,7 +62,7 @@ class image_denoiser():
         train_noisy = self._preprocessing(train_noisy)
         if batch_size is None:
             batch_size = min(128, len(train))
-        print(batch_size)
+            print('Batch size:'+str(batch_size))
         if val_noisy is None and val is None:
             check = 0
             history = self.autoencoder.fit(train_noisy, train,
@@ -74,7 +74,7 @@ class image_denoiser():
         elif isinstance(val_noisy, float):
             if batch_size is None:
                 batch_size = min(128, int(len(train)*(1-val_noisy)))
-            print(batch_size)
+                print('Batch size:'+str(batch_size))
             check = 1
             history = self.autoencoder.fit(train_noisy, train,
                                            epochs=epochs,
