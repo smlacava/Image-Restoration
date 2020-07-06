@@ -1,7 +1,7 @@
-from keras.datasets import mnist
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
-from keras.models import Model, load_model
-from keras.callbacks import TensorBoard
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras import backend as K
 import numpy as np
@@ -15,10 +15,8 @@ class image_denoiser():
         :param name: it is the name of the autoencoder ('Image_Denoiser' by default), and it can be useful in saving the
                      weights of the trained encoder (in this case, the path has to be included in the neme)
         """
-        self.image_dimension = 28
         self.name = name
         self.encoding_dim = 32
-        self.autoencoder = self.autoencoder_creation()
 
 
     def autoencoder_creation(self):
@@ -26,7 +24,7 @@ class image_denoiser():
         Theautoencoder_creation method creates the CNN structure which will be used as autoencoder.
         :return: autoencoder: it is the generated autoencoder
         """
-        input_img = Input(shape=(self.image_dimension, self.image_dimension, 1))
+        input_img = Input(shape=(self.image_dimension[0], self.image_dimension[1], 1))
         x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(input_img)
         x = MaxPooling2D((2, 2), padding='same')(x)
         x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(x)
@@ -56,6 +54,10 @@ class image_denoiser():
         :param batch_size: it defines the number of samples that will be propagated through the network (the minimum
                            between 128 and the total number of training samples by default)
         """
+        
+        self.image_dimension=x_train.shape[1:]
+        self.autoencoder = self.autoencoder_creation()
+        
         train = self._preprocessing(train)
         train_noisy = self._preprocessing(train_noisy)
         if batch_size is None:
@@ -151,14 +153,14 @@ class image_denoiser():
 
             # display noisy
             ax = plt.subplot(subp, n, i + 1)
-            plt.imshow(test_noisy[i].reshape(self.image_dimension, self.image_dimension))
+            plt.imshow(test_noisy[i].reshape(self.image_dimension[0], self.image_dimension[1]))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
 
             # display reconstruction
             ax = plt.subplot(subp, n, i + 1 + n)
-            plt.imshow(decoded_imgs[i].reshape(self.image_dimension, self.image_dimension))
+            plt.imshow(decoded_imgs[i].reshape(self.image_dimension[0], self.image_dimension[1]))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
@@ -166,7 +168,7 @@ class image_denoiser():
             if not(test is None):
                 # display original
                 ax = plt.subplot(subp, n, i + 1 + n + n)
-                plt.imshow(test[i].reshape(self.image_dimension, self.image_dimension))
+                plt.imshow(test[i].reshape(self.image_dimension[0], self.image_dimension[1]))
                 plt.gray()
                 ax.get_xaxis().set_visible(False)
                 ax.get_yaxis().set_visible(False)
@@ -179,7 +181,7 @@ class image_denoiser():
         :param data: it is the dataset of images
         :return: the preprocessed data
         """
-        data = np.reshape(data, (len(data), self.image_dimension, self.image_dimension, 1))
+        data = np.reshape(data, (len(data), self.image_dimension[0], self.image_dimension[1], 1))
         return data.astype('float32') / data.max()
 
 
