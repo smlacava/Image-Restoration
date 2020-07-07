@@ -17,7 +17,8 @@ class image_denoiser():
         """
         self.name = name
         self.encoding_dim = 32
-
+        self.image_dimension = [28, 28]
+        self.autoencoder = self.autoencoder_creation()
 
     def autoencoder_creation(self):
         """
@@ -38,7 +39,6 @@ class image_denoiser():
         autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
         return autoencoder
 
-
     def fit(self, train_noisy, train, val_noisy=None, val=None, epochs=100, batch_size=None):
         """
         The fit method is used to train the CNN, and it shows the loss curve(s) at the end of the whole process.
@@ -54,15 +54,15 @@ class image_denoiser():
         :param batch_size: it defines the number of samples that will be propagated through the network (the minimum
                            between 128 and the total number of training samples by default)
         """
-        
-        self.image_dimension=train.shape[1:]
+
+        self.image_dimension = train.shape[1:]
         self.autoencoder = self.autoencoder_creation()
-        
+
         train = self._preprocessing(train)
         train_noisy = self._preprocessing(train_noisy)
         if batch_size is None:
             batch_size = min(128, len(train))
-            print('Batch size:'+str(batch_size))
+            print('Batch size:' + str(batch_size))
         if val_noisy is None and val is None:
             check = 0
             history = self.autoencoder.fit(train_noisy, train,
@@ -73,8 +73,8 @@ class image_denoiser():
                                                TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False)])
         elif isinstance(val_noisy, float):
             if batch_size is None:
-                batch_size = min(128, int(len(train)*(1-val_noisy)))
-                print('Batch size:'+str(batch_size))
+                batch_size = min(128, int(len(train) * (1 - val_noisy)))
+                print('Batch size:' + str(batch_size))
             check = 1
             history = self.autoencoder.fit(train_noisy, train,
                                            epochs=epochs,
@@ -116,7 +116,6 @@ class image_denoiser():
             plt.xlabel('Epoch')
             plt.show()
 
-
     def predict(self, test_noisy, test=None, n=None):
         """
         The predict method denoises a set of images, and compares them with the corresponding images without noise (if
@@ -133,7 +132,6 @@ class image_denoiser():
         if not (n is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
         return decoded_imgs
-
 
     def _plot_results(self, n, test_noisy, test, decoded_imgs):
         """
@@ -165,7 +163,7 @@ class image_denoiser():
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
 
-            if not(test is None):
+            if not (test is None):
                 # display original
                 ax = plt.subplot(subp, n, i + 1 + n + n)
                 plt.imshow(test[i].reshape(self.image_dimension[0], self.image_dimension[1]))
@@ -173,7 +171,6 @@ class image_denoiser():
                 ax.get_xaxis().set_visible(False)
                 ax.get_yaxis().set_visible(False)
         plt.show()
-
 
     def _preprocessing(self, data):
         """
@@ -184,7 +181,6 @@ class image_denoiser():
         data = np.reshape(data, (len(data), self.image_dimension[0], self.image_dimension[1], 1))
         return data.astype('float32') / data.max()
 
-
     def set_name(self, name):
         """
         The set_name method is used to change the name of the encoder.
@@ -192,13 +188,11 @@ class image_denoiser():
         """
         self.name = name
 
-
     def export_weights(self):
         """
         The export_weights method is used to save the weights of the fitted CNN.
         """
         self.autoencoder.save_weights(self.name)
-
 
     def import_weights(self, name):
         """
@@ -206,6 +200,15 @@ class image_denoiser():
         :param name: it is the name of the file (with its path) which contains the weights to import
         """
         self.autoencoder.load_weights(name)
+
+
+    def set_input_dimensions(self, dim):
+        """
+        The set_input_dimensions method is used to set the weights of the CNN input layer.
+        :param dim: it is the list of the two dimensions
+        """
+        self.image_dimension = dim
+        self.autoencoder = self.autoencoder_creation()
 
 if __name__ == "__main__":
     print("The image_denoiser class allows to create autoencoders which filter out noise from input images.")
