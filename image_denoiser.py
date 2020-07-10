@@ -133,6 +133,7 @@ class image_denoiser():
             self._plot_results(n, test_noisy, test, decoded_imgs)
         return decoded_imgs
 
+    
     def _plot_results(self, n, test_noisy, test, decoded_imgs):
         """
         The _plot_results method is used to show the comparison of the noised images and the denoised ones, and the
@@ -142,23 +143,29 @@ class image_denoiser():
         :param test: it is the set of original images
         :param decoded_imgs: it is the set of denoised images
         """
+        
         if test is None:
             subp = 2
         else:
             subp = 3
+        
+        if self.image_dimension[2] == 1:
+            dimension = (self.image_dimension[0], self.image_dimension[1])
+        else:
+            dimension = (self.image_dimension[0], self.image_dimension[1], self.image_dimension[2])
 
         for i in range(n):
 
             # display noisy
             ax = plt.subplot(subp, n, i + 1)
-            plt.imshow(test_noisy[i])
+            plt.imshow(test_noisy[i].reshape(dimension))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
 
             # display reconstruction
             ax = plt.subplot(subp, n, i + 1 + n)
-            plt.imshow(decoded_imgs[i])
+            plt.imshow(decoded_imgs[i].reshape(dimension))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
@@ -166,12 +173,13 @@ class image_denoiser():
             if not (test is None):
                 # display original
                 ax = plt.subplot(subp, n, i + 1 + n + n)
-                plt.imshow(test[i])
+                plt.imshow(test[i].reshape(dimension))
                 plt.gray()
                 ax.get_xaxis().set_visible(False)
                 ax.get_yaxis().set_visible(False)
         plt.show()
-
+        
+        
     def _preprocessing(self, data):
         """
         The _preprocessing method is used in order to reshape the images to a common size and to normalize them.
