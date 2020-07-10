@@ -1,6 +1,7 @@
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Model, load_model
+from keras.losses import mse, binary_crossentropy
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras import backend as K
@@ -17,7 +18,7 @@ class image_denoiser():
         """
         self.name = name
         self.encoding_dim = 32
-        self.image_dimension = [28, 28]
+        self.image_dimension = [28, 28, 1]
         self.autoencoder = self.autoencoder_creation()
 
     def autoencoder_creation(self):
@@ -25,7 +26,7 @@ class image_denoiser():
         Theautoencoder_creation method creates the CNN structure which will be used as autoencoder.
         :return: autoencoder: it is the generated autoencoder
         """
-        input_img = Input(shape=(self.image_dimension[0], self.image_dimension[1], 1))
+        input_img = Input(shape=(self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
         x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(input_img)
         x = MaxPooling2D((2, 2), padding='same')(x)
         x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(x)
@@ -34,7 +35,7 @@ class image_denoiser():
         x = UpSampling2D((2, 2))(x)
         x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(x)
         x = UpSampling2D((2, 2))(x)
-        decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
+        decoded = Conv2D(self.image_dimension[2], (3, 3), activation='sigmoid', padding='same')(x)
         autoencoder = Model(input_img, decoded)
         autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
         return autoencoder
@@ -151,14 +152,14 @@ class image_denoiser():
 
             # display noisy
             ax = plt.subplot(subp, n, i + 1)
-            plt.imshow(test_noisy[i].reshape(self.image_dimension[0], self.image_dimension[1]))
+            plt.imshow(test_noisy[i].reshape(self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
 
             # display reconstruction
             ax = plt.subplot(subp, n, i + 1 + n)
-            plt.imshow(decoded_imgs[i].reshape(self.image_dimension[0], self.image_dimension[1]))
+            plt.imshow(decoded_imgs[i].reshape(self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
@@ -166,7 +167,7 @@ class image_denoiser():
             if not (test is None):
                 # display original
                 ax = plt.subplot(subp, n, i + 1 + n + n)
-                plt.imshow(test[i].reshape(self.image_dimension[0], self.image_dimension[1]))
+                plt.imshow(test[i].reshape(self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
                 plt.gray()
                 ax.get_xaxis().set_visible(False)
                 ax.get_yaxis().set_visible(False)
@@ -178,7 +179,7 @@ class image_denoiser():
         :param data: it is the dataset of images
         :return: the preprocessed data
         """
-        data = np.reshape(data, (len(data), self.image_dimension[0], self.image_dimension[1], 1))
+        data = np.reshape(data, (len(data), self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
         return data.astype('float32') / data.max()
 
     def set_name(self, name):
@@ -208,7 +209,10 @@ class image_denoiser():
         :param dim: it is the list of the two dimensions
         """
         self.image_dimension = dim
+        if len(dim) == 2:
+            self.image_dimension.append(1)
         self.autoencoder = self.autoencoder_creation()
+
 
 if __name__ == "__main__":
     print("The image_denoiser class allows to create autoencoders which filter out noise from input images.")
