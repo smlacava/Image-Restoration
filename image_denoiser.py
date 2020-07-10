@@ -56,8 +56,7 @@ class image_denoiser():
                            between 128 and the total number of training samples by default)
         """
 
-        self.image_dimension = train.shape[1:]
-        self.autoencoder = self.autoencoder_creation()
+        self.set_input_dimensions(train.shape[1:])
 
         train = self._preprocessing(train)
         train_noisy = self._preprocessing(train_noisy)
@@ -202,15 +201,15 @@ class image_denoiser():
         """
         self.autoencoder.load_weights(name)
 
-
     def set_input_dimensions(self, dim):
         """
         The set_input_dimensions method is used to set the weights of the CNN input layer.
         :param dim: it is the list of the two dimensions
         """
-        self.image_dimension = dim
         if len(dim) == 2:
-            self.image_dimension.append(1)
+            self.image_dimension = (dim[0], dim[1], 1)
+        else:
+            self.image_dimension = dim
         self.autoencoder = self.autoencoder_creation()
 
 
