@@ -1,4 +1,7 @@
-from matplotlib import pyplot as plt
+  
+"""notMNIST DEMO"""
+# This is a demonstration of the use of the image denoiser with the notMNIST dataset composed by images of character in different fonts.
+# In paricular, a Gaussian noise matrix is applied to the image of each digit.from matplotlib import pyplot as plt
 import numpy as np
 import gzip
 from image_denoiser import image_denoiser
@@ -12,15 +15,15 @@ def extract_data(filename, num_images):
         data = data.reshape(num_images, 28,28)
         return data
     
-x_train = extract_data('/Users/marcorru/OneDrive - Università di Cagliari/Machine Learning/ProgettoML/notMNIST-to-MNIST-master/train-images-idx3-ubyte.gz', 60000)
-x_test = extract_data('/Users/marcorru/OneDrive - Università di Cagliari/Machine Learning/ProgettoML/notMNIST-to-MNIST-master/t10k-images-idx3-ubyte.gz', 10000)
+x_train = extract_data('notMNIST-to-MNIST-master/train-images-idx3-ubyte.gz', 60000)
+x_test = extract_data('notMNIST-to-MNIST-master/t10k-images-idx3-ubyte.gz', 10000)
 
 
 # Now, it is necessary to add some noise to the images, in order to create the noised datasets, both for the testing set
 # and the test set.
 # In particular, the Gaussian noise distribution has zero-mean (loc) and unitary standard deviation (scale), and the
-# resulting values are multiplied by 64.
-noise_factor = 64
+# resulting values are multiplied by 32.
+noise_factor = 32
 x_train_noisy = x_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_train.shape)
 x_test_noisy = x_test + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_test.shape)
 
