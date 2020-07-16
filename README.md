@@ -8,7 +8,7 @@ It is developed on Python v.3.6, and uses the following libraries:
  - Numpy
  - Matplotlib
 
-# Colab links:
+## Colab links:
 
 DEMO Normal Autoencoder on CIFAR:
 DEMO Variational Autoencoder on CIFAR: 
