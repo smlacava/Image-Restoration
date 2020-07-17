@@ -148,7 +148,7 @@ class VAE_denoiser(image_denoiser):
                                            shuffle=True,
                                            callbacks=[
                                                TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                               EarlyStopping(monitor='val_loss', patience=3),
+                                               EarlyStopping(monitor='val_loss', patience=10),
                                                ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
                                                                verbose=1, save_best_only=True, save_weights_only=True)])
         else:
@@ -162,7 +162,7 @@ class VAE_denoiser(image_denoiser):
                                            validation_data=(val_noisy, val),
                                            callbacks=[
                                                TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                               EarlyStopping(monitor='val_loss', patience=3),
+                                               EarlyStopping(monitor='val_loss', patience=10),
                                                ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
                                                                verbose=1, save_best_only=True, save_weights_only=True)])
         if check == 1:
