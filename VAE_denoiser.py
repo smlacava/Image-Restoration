@@ -111,3 +111,35 @@ class VAE_denoiser(image_denoiser):
         if not (n is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
         return decoded_imgs
+
+
+if __name__ == "__main__":
+    print("The VAE_denoiser class allows to create variational autoencoders which filter out noise from input images.")
+    print("In particular, the variational autoencoder object is a CNN, which takes 28 x 28 images (otherwise, it ", 
+          "automatically resamples them)")
+    print("\nTo make an example, it is possible to use the mnist dataset:")
+    print("\n     from keras.datasets import mnist")
+    print("     (x_train, _), (x_test, _) = mnist.load_data()")
+    print("\nNow, it is possible to add some noise to the images:")
+    print("\n     noise_factor = 64")
+    print("     x_train_noisy = x_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_train.shape)")
+    print("     x_test_noisy = x_test + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_test.shape)")
+    print("\nIt is needed to limit the range of the values between 0 and 255:")
+    print("\n     x_train_noisy = np.clip(x_train_noisy, 0., 1.)")
+    print("     x_test_noisy = np.clip(x_test_noisy, 0., 1.)")
+    print("\nFinally, it is possible to initialize the denoiser:")
+    print("\n     ID = VAE_denoiser()")
+    print("\nThere are different ways to train it:")
+    print("\t - It is possible to avoid the validation, thruogh ID.fit(x_train_noisy, x_train)")
+    print("\t - It is possible to use as validation set a fraction of the training set, through ID.fit(x_train_noisy, ",
+          "x_train, n), where n is a value among 0 and 1")
+    print("\t - It is possible to insert a validation set and the corresponing noised one, through ",
+          "ID.fit(x_train_noisy, x_train, x_val_noisy, x_val), where x_val and x_val_noisy are the validation set ",
+          "and the noised one")
+    print("Furthermore, it is possible to set the number of epochs and the size of the batch.")
+    print("For example, in order to train it in 100 epochs with the previously computed training set and the noised ",
+          "one, using the +20% of them as validation set, and with a batch size equal to 128, it is possible to use:")
+    print("\n     ID.fit(x_train_noisy, x_train, 0.2, epochs=100, batch_size=128)")
+    print("\nIn order to denoise the test set and to see the resulting images, for example the first ten images, it is",
+          "possible to use:")
+    print("\n     ID.predict(x_test_noisy, x_test, 10)")
