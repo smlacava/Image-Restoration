@@ -9,7 +9,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 import numpy as np
 import matplotlib.pyplot as plt
-#from image_denoiser import image_denoiser
+from image_denoiser import image_denoiser
 
 
 class VAE_denoiser(image_denoiser):
@@ -24,8 +24,14 @@ class VAE_denoiser(image_denoiser):
         self.name = name
         self.image_dimension = [28, 28, 1]
         self.autoencoder = self.autoencoder_creation()
+        self.patience = 10
 
+        
     def autoencoder_creation(self):
+      """
+      The autoencoder_creation method creates the CNN structure which will be used as variational autoencoder.
+      :return: autoencoder: it is the generated variational autoencoder
+      """
       i       = Input(shape=self.image_dimension, name='encoder_input')
       cx      = Conv2D(filters=self.filter_dim, kernel_size=3, strides=2, padding='same', activation='relu')(i)
       cx      = BatchNormalization()(cx)
@@ -105,78 +111,3 @@ class VAE_denoiser(image_denoiser):
         if not (n is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
         return decoded_imgs
-
-    def fit(self, train_noisy, train, val_noisy=None, val=None, epochs=100, batch_size=None):
-        """
-        The fit method is used to train the CNN, and it shows the loss curve(s) at the end of the whole process.
-        :param train_noisy: it is the dataset of the noised images which is used in the training phase
-        :param train: it is the dataset of images, without noise, which is used in the training phase
-        :param val_noisy: it can be the dataset of noised images which is used in the validation phase, or a number
-                           between 0 and 1 which indicates the fraction of training dataset which has to be used as
-                           validation set, or None to avoid the validation phase (None by default)
-        :param val: it is the dataset of images, without noise, which is used in the validation phase (None by default)
-        :param epochs: it is the number of fitting epochs, which is automatically reduced if the validation loss does
-                       not reduces anymore after a certain number of steps, and in any case the settings which shows the
-                       best performance are saved (100 by default)
-        :param batch_size: it defines the number of samples that will be propagated through the network (the minimum
-                           between 128 and the total number of training samples by default)
-        """
-        self.set_input_dimensions(train.shape[1:])
-        
-        train = self._preprocessing(train)
-        train_noisy = self._preprocessing(train_noisy)
-        if batch_size is None:
-            batch_size = min(128, len(train))
-            print('Batch size:' + str(batch_size))
-        if val_noisy is None and val is None:
-            check = 0
-            history = self.autoencoder.fit(train_noisy, train,
-                                           epochs=epochs,
-                                           batch_size=batch_size,
-                                           shuffle=True,
-                                           callbacks=[
-                                               TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False)])
-        elif isinstance(val_noisy, float):
-            if batch_size is None:
-                batch_size = min(128, int(len(train) * (1 - val_noisy)))
-                print('Batch size:' + str(batch_size))
-            check = 1
-            history = self.autoencoder.fit(train_noisy, train,
-                                           epochs=epochs,
-                                           batch_size=batch_size,
-                                           validation_split=val_noisy,
-                                           shuffle=True,
-                                           callbacks=[
-                                               TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                               EarlyStopping(monitor='val_loss', patience=10),
-                                               ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
-                                                               verbose=1, save_best_only=True, save_weights_only=True)])
-        else:
-            check = 1
-            val = self._preprocessing(val)
-            val_noisy = self._preprocessing(val_noisy)
-            history = self.autoencoder.fit(train_noisy, train,
-                                           epochs=epochs,
-                                           batch_size=batch_size,
-                                           shuffle=True,
-                                           validation_data=(val_noisy, val),
-                                           callbacks=[
-                                               TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                               EarlyStopping(monitor='val_loss', patience=10),
-                                               ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
-                                                               verbose=1, save_best_only=True, save_weights_only=True)])
-        if check == 1:
-            self.autoencoder.load_weights('/tmp/checkpoint')
-            plt.plot(range(1, len(history.history['loss']) + 1), history.history['loss'],
-                     range(1, len(history.history['val_loss']) + 1), history.history['val_loss'])
-            plt.title('Loss Curves')
-            plt.ylabel('Loss')
-            plt.xlabel('Epoch')
-            plt.legend(['Model', 'Validation'])
-            plt.show()
-        else:
-            plt.plot(range(1, len(history.history['loss']) + 1), history.history['loss'])
-            plt.title('Model Loss')
-            plt.ylabel('Loss')
-            plt.xlabel('Epoch')
-            plt.show()
