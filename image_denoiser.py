@@ -19,11 +19,12 @@ class image_denoiser():
         self.name = name
         self.encoding_dim = 32
         self.image_dimension = [28, 28, 1]
+        self.patience = 3
         self.autoencoder = self.autoencoder_creation()
 
     def autoencoder_creation(self):
         """
-        Theautoencoder_creation method creates the CNN structure which will be used as autoencoder.
+        The autoencoder_creation method creates the CNN structure which will be used as autoencoder.
         :return: autoencoder: it is the generated autoencoder
         """
         input_img = Input(shape=(self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
@@ -83,9 +84,10 @@ class image_denoiser():
                                            shuffle=True,
                                            callbacks=[
                                                TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                               EarlyStopping(monitor='val_loss', patience=3),
+                                               EarlyStopping(monitor='val_loss', patience=self.patience),
                                                ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
-                                                               verbose=1, save_best_only=True)])
+                                                               verbose=1, save_best_only=True, 
+                                                               save_weights_only=True)])
         else:
             check = 1
             val = self._preprocessing(val)
@@ -97,11 +99,12 @@ class image_denoiser():
                                            validation_data=(val_noisy, val),
                                            callbacks=[
                                                TensorBoard(log_dir='/tmp/tb', histogram_freq=0, write_graph=False),
-                                               EarlyStopping(monitor='val_loss', patience=3),
+                                               EarlyStopping(monitor='val_loss', patience=self.patience),
                                                ModelCheckpoint('/tmp/checkpoint', monitor='val_loss', mode='min',
-                                                               verbose=1, save_best_only=True)])
+                                                               verbose=1, save_best_only=True, 
+                                                               save_weights_only=True)])
         if check == 1:
-            self.autoencoder = load_model('/tmp/checkpoint')
+            self.autoencoder.load_weights('/tmp/checkpoint')
             plt.plot(range(1, len(history.history['loss']) + 1), history.history['loss'],
                      range(1, len(history.history['val_loss']) + 1), history.history['val_loss'])
             plt.title('Loss Curves')
