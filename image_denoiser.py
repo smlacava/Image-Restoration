@@ -17,7 +17,8 @@ class image_denoiser():
                      weights of the trained encoder (in this case, the path has to be included in the neme)
         """
         self.name = name
-        self.encoding_dim = 32
+        self.filter_dim = 32
+        self.kernel_dim = 3
         self.image_dimension = [28, 28, 1]
         self.patience = 3
         self.autoencoder = self.autoencoder_creation()
@@ -27,16 +28,16 @@ class image_denoiser():
         The autoencoder_creation method creates the CNN structure which will be used as autoencoder.
         :return: autoencoder: it is the generated autoencoder
         """
-        input_img = Input(shape=(self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
-        x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(input_img)
-        x = MaxPooling2D((2, 2), padding='same')(x)
-        x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(x)
-        encoded = MaxPooling2D((2, 2), padding='same')(x)
-        x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(encoded)
-        x = UpSampling2D((2, 2))(x)
-        x = Conv2D(self.encoding_dim, (3, 3), activation='relu', padding='same')(x)
-        x = UpSampling2D((2, 2))(x)
-        decoded = Conv2D(self.image_dimension[2], (3, 3), activation='sigmoid', padding='same')(x)
+        input_img   = Input(shape=(self.image_dimension[0], self.image_dimension[1], self.image_dimension[2]))
+        x           = Conv2D(filters=self.filter_dim, kernel_size=self.kernel_dim, activation='relu', padding='same')(input_img)
+        x           = MaxPooling2D((2, 2), padding='same')(x)
+        x           = Conv2D(filters=self.filter_dim, kernel_size=self.kernel_dim, activation='relu', padding='same')(x)
+        encoded     = MaxPooling2D((2, 2), padding='same')(x)
+        x           = Conv2D(filters=self.filter_dim, kernel_size=self.kernel_dim, activation='relu', padding='same')(encoded)
+        x           = UpSampling2D((2, 2))(x)
+        x           = Conv2D(filters=self.filter_dim, kernel_size=self.kernel_dim, activation='relu', padding='same')(x)
+        x           = UpSampling2D((2, 2))(x)
+        decoded     = Conv2D(filters=self.image_dimension[2], kernel_size=self.kernel_dim, activation='sigmoid', padding='same')(x)
         autoencoder = Model(input_img, decoded)
         autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
         return autoencoder
@@ -137,14 +138,22 @@ class image_denoiser():
             self._plot_results(n, test_noisy, test, decoded_imgs)
 
         if return_loss:
-           bce = tf.keras.losses.BinaryCrossentropy()
-           n_samples = len(test_noisy)
-           reconstruction_loss = np.zeros(shape=(n_samples, ))
-           for i in range(n_samples):
-              reconstruction_loss[i] = bce(test_noisy[i], decoded_imgs[i]).numpy()
-           return decoded_imgs, reconstruction_loss
+           return decoded_imgs, self._compute_loss(test_noisy, decoded_imgs)
         return decoded_imgs
 
+    def _compute_loss(self, test_noisy, decoded_imgs):
+        """
+        The method compute_loss compotes the reconstruction loss between the test images (noised) and the denoised ones
+        :param test_noisy: it is the dataset of noised images used as test set
+        :param decoded_imgs: it is the dataset of denoised images
+        :return: the binary crossentropy for each image of the dataset
+        """
+        bce = tf.keras.losses.BinaryCrossentropy()
+        n_samples = len(test_noisy)
+        reconstruction_loss = np.zeros(shape=(n_samples, ))
+        for i in range(n_samples):
+          reconstruction_loss[i] = bce(test_noisy[i], decoded_imgs[i]).numpy()
+        return reconstruction_loss
     
     def _plot_results(self, n, test_noisy, test, decoded_imgs):
         """
