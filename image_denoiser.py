@@ -1,13 +1,13 @@
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Model, load_model
-from keras.losses import mse, binary_crossentropy
+from tensorflow.keras.losses import mse, binary_crossentropy
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras import backend as K
+from tensorflow.keras import backend as K
 import numpy as np
 import matplotlib.pyplot as plt
-
+import tensorflow as tf
 
 class image_denoiser():
     def __init__(self, name='Image_Denoiser'):
@@ -119,14 +119,15 @@ class image_denoiser():
             plt.xlabel('Epoch')
             plt.show()
 
-    def predict(self, test_noisy, test=None, n=None):
+    def predict(self, test_noisy, test=None, n=None, return_loss = False):
         """
         The predict method denoises a set of images, and compares them with the corresponding images without noise (if
         they are used as argument).
         :param test_noisy: it is the set of noised images
         :param test: it is the set of the images without noise, corresponding to the noised images (None by default)
-        :param n: it is the number of imaged which have to be compared
-        :return: the denoised images
+        :param n: it is the number of imaged which have to be compared (None by default)
+        :param return_loss: it has to be True if the function has to return also the reconstruction loss (False by default)
+        :return: the denoised images, and the binary crossentropy between each (noised) image and its reconstruction (if return_loss is True)
         """
         if not (test is None):
             test = self._preprocessing(test)
@@ -134,6 +135,14 @@ class image_denoiser():
         decoded_imgs = self.autoencoder.predict(test_noisy)
         if not (n is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
+
+        if return_loss:
+           bce = tf.keras.losses.BinaryCrossentropy()
+           n_samples = len(test_noisy)
+           reconstruction_loss = np.zeros(shape=(n_samples, ))
+           for i in range(n_samples):
+              reconstruction_loss[i] = bce(test_noisy[i], decoded_imgs[0]).numpy()
+           return decoded_imgs, reconstruction_loss
         return decoded_imgs
 
     
