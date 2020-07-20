@@ -1,16 +1,11 @@
-import keras
-from keras.layers import Lambda, Input, Dense, Layer, Conv2D, BatchNormalization, Conv2DTranspose, Flatten, Reshape
-from keras.models import Model
-from keras.datasets import mnist
-from keras.losses import mse, binary_crossentropy
-from keras import backend as K
-from keras.callbacks import TensorBoard
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-
+from tensorflow.keras.layers import Lambda, Input, Dense, Layer, Conv2D, BatchNormalization, Conv2DTranspose, Flatten, Reshape
+from tensorflow.keras.models import Model
+from tensorflow.keras.losses import mse, binary_crossentropy
+from tensorflow.keras import backend as K
 import numpy as np
 import matplotlib.pyplot as plt
 from image_denoiser import image_denoiser
-
+import tensorflow as tf
 
 class VAE_denoiser(image_denoiser):
     def __init__(self, name = 'Image_Denoiser'):
@@ -19,23 +14,24 @@ class VAE_denoiser(image_denoiser):
         :param name: it is the name of the autoencoder ('Image_Denoiser' by default), and it can be useful in saving the
                      weights of the trained encoder (in this case, the path has to be included in the neme)
         """
+        tf.compat.v1.disable_eager_execution()
         self.latent_dim = 2
-        self.filter_dim = 8
+        self.filter_dim = 32
+        self.kernel_dim = 3
         self.name = name
         self.image_dimension = [28, 28, 1]
         self.autoencoder = self.autoencoder_creation()
         self.patience = 10
 
-        
     def autoencoder_creation(self):
       """
       The autoencoder_creation method creates the CNN structure which will be used as variational autoencoder.
       :return: autoencoder: it is the generated variational autoencoder
       """
       i       = Input(shape=self.image_dimension, name='encoder_input')
-      cx      = Conv2D(filters=self.filter_dim, kernel_size=3, strides=2, padding='same', activation='relu')(i)
+      cx      = Conv2D(filters=self.filter_dim, kernel_size=self.kernel_dim, strides=2, padding='same', activation='relu')(i)
       cx      = BatchNormalization()(cx)
-      cx      = Conv2D(filters=self.filter_dim*2, kernel_size=3, strides=2, padding='same', activation='relu')(cx)
+      cx      = Conv2D(filters=self.filter_dim*2, kernel_size=self.kernel_dim, strides=2, padding='same', activation='relu')(cx)
       cx      = BatchNormalization()(cx)
       x       = Flatten()(cx)
       x       = Dense(20, activation='relu')(x)
@@ -65,11 +61,11 @@ class VAE_denoiser(image_denoiser):
       x     = Dense(conv_shape[1] * conv_shape[2] * conv_shape[3], activation='relu')(d_i)
       x     = BatchNormalization()(x)
       x     = Reshape((conv_shape[1], conv_shape[2], conv_shape[3]))(x)
-      cx    = Conv2DTranspose(self.filter_dim*2, kernel_size=3, strides=2, padding='same', activation='relu')(x)
+      cx    = Conv2DTranspose(filters=self.filter_dim*2, kernel_size=self.kernel_dim, strides=2, padding='same', activation='relu')(x)
       cx    = BatchNormalization()(cx)
-      cx    = Conv2DTranspose(filters=self.filter_dim, kernel_size=3, strides=2, padding='same',  activation='relu')(cx)
+      cx    = Conv2DTranspose(filters=self.filter_dim, kernel_size=self.kernel_dim, strides=2, padding='same',  activation='relu')(cx)
       cx    = BatchNormalization()(cx)
-      o     = Conv2DTranspose(filters=self.image_dimension[-1], kernel_size=3, activation='sigmoid', padding='same', name='decoder_output')(cx)
+      o     = Conv2DTranspose(filters=self.image_dimension[-1], kernel_size=self.kernel_dim, activation='sigmoid', padding='same', name='decoder_output')(cx)
 
       decoder = Model(d_i, o, name='decoder')
 
@@ -92,15 +88,16 @@ class VAE_denoiser(image_denoiser):
       
       autoencoder.compile(optimizer='adam', loss=vae_loss)
       return autoencoder
-  
-    def predict(self, test_noisy, test=None, n=None):
+
+    def predict(self, test_noisy, test = None, n = None, return_loss = False):
         """
         The predict method denoises a set of images, and compares them with the corresponding images without noise (if
         they are used as argument).
         :param test_noisy: it is the set of noised images
         :param test: it is the set of the images without noise, corresponding to the noised images (None by default)
-        :param n: it is the number of imaged which have to be compared
-        :return: the denoised images
+        :param n: it is the number of imaged which have to be compared (None by default)
+        :param return_loss: it has to be True if the function has to return also the reconstruction loss (False by default)
+        :return: the denoised images, and the binary crossentropy between each (noised) image and its reconstruction (if return_loss is True)
         """
         if not (test is None):
             test = self._preprocessing(test)
@@ -110,7 +107,28 @@ class VAE_denoiser(image_denoiser):
             decoded_imgs = decoded_imgs.reshape(len(decoded_imgs), self.image_dimension[0], self.image_dimension[1])
         if not (n is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
+
+        if return_loss:
+           return decoded_imgs, self._compute_loss(test_noisy, decoded_imgs)
         return decoded_imgs
+
+    def _compute_loss(self, test_noisy, decoded_imgs):
+        """
+        The method compute_loss compotes the reconstruction loss between the test images (noised) and the denoised ones
+        :param test_noisy: it is the dataset of noised images used as test set
+        :param decoded_imgs: it is the dataset of denoised images
+        :return: the binary crossentropy for each image of the dataset
+        """
+        if self.image_dimension[2] == 1:
+            test_noisy = test_noisy.reshape(len(test_noisy), self.image_dimension[0], self.image_dimension[1])
+        n_samples = len(test_noisy)
+        reconstruction_loss = np.zeros(shape=(n_samples, ))
+        n_elements = np.prod(self.image_dimension)
+        for i in range(n_samples):
+          x = np.reshape(test_noisy[i], n_elements)
+          y = np.clip(np.reshape(decoded_imgs[i], n_elements), 1e-12, 1. - 1e-12)
+          reconstruction_loss[i] = -np.sum(x*np.log(y+1e-9))/n_elements
+        return reconstruction_loss
 
 
 if __name__ == "__main__":
