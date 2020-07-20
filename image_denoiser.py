@@ -141,7 +141,7 @@ class image_denoiser():
            n_samples = len(test_noisy)
            reconstruction_loss = np.zeros(shape=(n_samples, ))
            for i in range(n_samples):
-              reconstruction_loss[i] = bce(test_noisy[i], decoded_imgs[0]).numpy()
+              reconstruction_loss[i] = bce(test_noisy[i], decoded_imgs[i]).numpy()
            return decoded_imgs, reconstruction_loss
         return decoded_imgs
 
