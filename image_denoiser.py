@@ -1,7 +1,6 @@
-from tensorflow.keras.datasets import mnist
 from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.losses import mse, binary_crossentropy
+from tensorflow.keras.losses import binary_crossentropy
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras import backend as K
@@ -130,15 +129,16 @@ class image_denoiser():
         :param return_loss: it has to be True if the function has to return also the reconstruction loss (False by default)
         :return: the denoised images, and the binary crossentropy between each (noised) image and its reconstruction (if return_loss is True)
         """
-        if not (test is None):
+        test_check = not (test is None)
+        if test_check:
             test = self._preprocessing(test)
         test_noisy = self._preprocessing(test_noisy)
         decoded_imgs = self.autoencoder.predict(test_noisy)
         if not (n is None):
             self._plot_results(n, test_noisy, test, decoded_imgs)
 
-        if return_loss:
-           return decoded_imgs, self._compute_loss(test_noisy, decoded_imgs)
+        if return_loss and test_check:
+           return decoded_imgs, self._compute_loss(test, decoded_imgs)
         return decoded_imgs
 
     def _compute_loss(self, test_noisy, decoded_imgs):
