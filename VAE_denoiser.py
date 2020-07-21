@@ -5,7 +5,7 @@ from tensorflow.keras import backend as K
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-#from image_denoiser import image_denoiser
+from image_denoiser import image_denoiser
 
 class VAE_denoiser(image_denoiser):
     def __init__(self, name = 'Image_Denoiser'):
