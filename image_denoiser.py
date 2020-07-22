@@ -174,7 +174,7 @@ class image_denoiser():
             dimension = (self.image_dimension[0], self.image_dimension[1])
         else:
             dimension = (self.image_dimension[0], self.image_dimension[1], self.image_dimension[2])
-
+        
         for i in range(n):
 
             # display noisy
@@ -183,6 +183,8 @@ class image_denoiser():
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
+            if i==np.floor(n/2)-1:
+              ax.set_title('Noisy')
 
             # display reconstruction
             ax = plt.subplot(subp, n, i + 1 + n)
@@ -190,6 +192,8 @@ class image_denoiser():
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
+            if i==np.floor(n/2)-1:
+              ax.set_title('Denoised')
 
             if not (test is None):
                 # display original
@@ -198,6 +202,9 @@ class image_denoiser():
                 plt.gray()
                 ax.get_xaxis().set_visible(False)
                 ax.get_yaxis().set_visible(False)
+            if i==np.floor(n/2)-1:
+                  ax.set_title('Original')
+       
         plt.show()
         
         
