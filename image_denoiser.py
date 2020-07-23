@@ -202,7 +202,7 @@ class image_denoiser():
                 plt.gray()
                 ax.get_xaxis().set_visible(False)
                 ax.get_yaxis().set_visible(False)
-            if i==np.floor(n/2)-1:
+                if i==np.floor(n/2)-1:
                   ax.set_title('Original')
        
         plt.show()
