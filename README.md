@@ -16,3 +16,4 @@ It is developed on Python v.3.6, and uses the following libraries:
  - DEMO Normal Autoencoder on not-mnist (with ROC evaluation testing mnist + not-mnist datasets): https://colab.research.google.com/drive/19Q7W666_t_oK63ifroTaPUjMhwOZ6pHu?usp=sharing
  - DEMO Variational Autoencoder on mnist (with ROC evaluation testing mnist + not-mnist datasets): https://colab.research.google.com/drive/1aQXnY_UVqgPwpusB8hIlWKxo68qCnNjj?usp=sharing
  - DEMO Variational Autoencoder on notmnist (with ROC evaluation testing mnist + not-mnist datasets): https://colab.research.google.com/drive/1yjAfkHnFo_GzxyN1V8KO10_mxwisgdWZ?usp=sharing
+ - DEMO on SVM classification performance comparison: https://colab.research.google.com/drive/1SqjApxogvg-_zglEIrmtACB1mMZIjFOf?usp=sharing
