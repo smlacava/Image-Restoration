@@ -80,7 +80,7 @@ class VAE_denoiser(image_denoiser):
           :parameter pred: it is the predicted image
           :return: the average between the reconstruction loss and the KL loss
           """
-          reconstruction_loss = binary_crossentropy(K.flatten(true), K.flatten(pred)) * self.image_dimension[0] * self.image_dimension[1]
+          reconstruction_loss = binary_crossentropy(K.flatten(true), K.flatten(pred)) * self.image_dimension[0] * self.image_dimension[1] * self.image_dimension[2]
           kl_loss = 1 + sigma - K.square(mu) - K.exp(sigma)
           kl_loss = K.sum(kl_loss, axis=-1)
           kl_loss *= -0.5
