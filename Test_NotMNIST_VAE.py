@@ -56,7 +56,7 @@ ID.set_name(filename)    # Assignment of the chosen name
 # Training of the denoiser, using as validation set a fraction equal to 0.2 (20%) of the training set, on 200 epochs and
 # with the size of the batches of data equal to 128.
 # Note that, even if the number of epochs is 200, the algorithm will automatically stop the training if the CNN does not
-# improve (reduce) the value of the validation loss after 3 epochs, and however only the weights with the minimum
+# improve (reduce) the value of the validation loss after 10 epochs, and however only the weights with the minimum
 # validation loss value are saved at the end of the process.
 ID.fit(x_train_noisy, x_train,0.2, epochs = 200, batch_size=128)
 
@@ -68,7 +68,7 @@ ID.fit(x_train_noisy, x_train,0.2, epochs = 200, batch_size=128)
 # method (in order to import them, it is possible to use the import_weights method).
 decoded = ID.predict(x_test_noisy, x_test, 10)
 
-# It is possible show one of the results singularly, in order to have a better view
+# It is possible show one of the results singularly, in order to have a better view.
 ax = plt.subplot(1, 2, 1)
 plt.imshow(x_test_noisy[0].reshape(28, 28))
 plt.gray()
@@ -127,8 +127,8 @@ ax.get_yaxis().set_visible(False)
 plt.show()
 
 ID.export_weights()
-T=np.zeros((10000,1)) #creation of vector 1 relating to the test belonging to the mnist
-F=np.ones((10000,1)) #creation of vector 0 relating to the test belonging to the not-mnist
+T=np.zeros((10000,1)) #creation of vector of 0s relating to the test belonging to the mnist
+F=np.ones((10000,1)) #creation of vector of 1s relating to the test belonging to the not-mnist
 true=np.concatenate((T,F),axis=0)
 
 pred=np.concatenate((np.reshape(reconstruction_loss,(10000,1)),np.reshape(reconstruction_loss_mnist,(10000,1))),axis=0)
