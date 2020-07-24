@@ -1,7 +1,7 @@
   
 """notMNIST DEMO"""
 # This is a demonstration of the use of the image denoiser with the notMNIST dataset composed by images of character in different fonts.
-# In paricular, a Gaussian noise matrix is applied to the image of each digit.from matplotlib import pyplot as plt
+# In paricular, a Gaussian noise matrix is applied to the image of each digit.from matplotlib import pyplot as plt.
 import numpy as np
 import gzip
 from image_denoiser import image_denoiser
@@ -23,7 +23,7 @@ x_test = extract_data('notMNIST-to-MNIST-master/t10k-images-idx3-ubyte.gz', 1000
 # Now, it is necessary to add some noise to the images, in order to create the noised datasets, both for the testing set
 # and the test set.
 # In particular, the Gaussian noise distribution has zero-mean (loc) and unitary standard deviation (scale), and the
-# resulting values are multiplied by 32.
+# resulting values are multiplied by 64.
 noise_factor = 64
 x_train_noisy = x_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_train.shape)
 x_test_noisy = x_test + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_test.shape)
@@ -84,7 +84,7 @@ ax.get_yaxis().set_visible(False)
 plt.show()
 ID.export_weights()
 
-#Evaluation of the performance of the denoiser if it's fed with a differente dataset ( in this case with the mnist dataset)
+#Evaluation of the performance of the denoiser if it's fed with a different dataset (in this case with the mnist dataset)
 
 
 import sklearn.metrics as sk
@@ -131,8 +131,8 @@ ax.get_yaxis().set_visible(False)
 plt.show()
 
 ID.export_weights()
-T=np.zeros((10000,1)) #creation of vector 1 relating to the test belonging to the mnist
-F=np.ones((10000,1)) #creation of vector 0 relating to the test belonging to the not-mnist
+T=np.zeros((10000,1)) #creation of vector of 0s relating to the test belonging to the mnist
+F=np.ones((10000,1)) #creation of vector of 1s relating to the test belonging to the not-mnist
 true=np.concatenate((T,F),axis=0)
 
 pred=np.concatenate((np.reshape(reconstruction_loss,(10000,1)),np.reshape(reconstruction_loss_mnist,(10000,1))),axis=0)
