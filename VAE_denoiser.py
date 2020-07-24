@@ -44,7 +44,7 @@ class VAE_denoiser(image_denoiser):
       def sample_z(args):
           """
           The sample_z function samples the value for z from the computed μ and σ values by resampling into 
-          μ + K.exp(σ/2) * ϵ (the reparameterization allows to obtain a differentiable loss function)
+          μ + exp(σ/2) * ϵ (the reparameterization allows to obtain a differentiable loss function)
           :param name: it is the composed by μ and σ values
           :return: the reparametrized function value
           """
