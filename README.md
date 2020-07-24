@@ -10,7 +10,7 @@ It is developed on Python v.3.6, and uses the following libraries:
 
 ## COLAB TESTS:
 
- - [Normal Autoencoder on mnist (with ROC evaluation testing mnist + not-mnist datasets)] (https://colab.research.google.com/drive/1YVQ85cmibn69EviknVQNQgd-H28hm-U5?usp=sharing)
+ - [Normal Autoencoder on mnist, with ROC evaluation testing mnist + not-mnist datasets] (https://colab.research.google.com/drive/1YVQ85cmibn69EviknVQNQgd-H28hm-U5?usp=sharing)
 
  - Normal Autoencoder on not-mnist (with ROC evaluation testing mnist + not-mnist datasets): https://colab.research.google.com/drive/19Q7W666_t_oK63ifroTaPUjMhwOZ6pHu?usp=sharing
 
