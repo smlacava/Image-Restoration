@@ -7,7 +7,7 @@
 from keras.datasets import mnist
 import numpy as np
 import matplotlib.pyplot as plt
-#from image_denoiser import image_denoiser
+from image_denoiser import image_denoiser
 
 (x_train, _), (x_test, _) = mnist.load_data()
 
@@ -74,7 +74,7 @@ ax.get_yaxis().set_visible(False)
 plt.show()
 ID.export_weights()
 
-#Evaluation of the performance of the denoiser if it's fed with a differente dataset ( in this case with the not-mnist dataset)
+#Evaluation of the performance of the denoiser if it's fed with a differente dataset (in this case with the not-mnist dataset)
 import gzip
 import sklearn.metrics as sk
 from sklearn.metrics import roc_curve, auc
@@ -87,12 +87,12 @@ def extract_data(filename, num_images):
         data = data.reshape(num_images, 28,28)
         return data
     
-x_test_not = extract_data('notMNIST-to-MNIST-master/t10k-images-idx3-ubyte.gz', 10000)  #caricamento not-mnist test
-x_test_noisy_not = x_test_not + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_test_not.shape) #noisy not mnist 
+x_test_not = extract_data('notMNIST-to-MNIST-master/t10k-images-idx3-ubyte.gz', 10000)  #loading of the not-mnist test
+x_test_noisy_not = x_test_not + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_test_not.shape) #noisy not-mnist 
 
 x_test_noisy_not = np.clip(x_test_noisy_not, 0., 255.)
 
-[decoded_imgs_not, reconstruction_loss_not] = ID.predict(x_test_noisy_not, x_test_not, 10,return_loss = True) #not mnist tested on the autoencoder trained on mnist
+[decoded_imgs_not, reconstruction_loss_not] = ID.predict(x_test_noisy_not, x_test_not, 10,return_loss = True) #not-mnist tested on the autoencoder trained on mnist
 
 print('Example of denoising for the mnist')
 
@@ -110,8 +110,8 @@ plt.show()
 
 
 ID.export_weights()
-T=np.zeros((10000,1)) #creation of vector 1 relating to the test belonging to the mnist
-F=np.ones((10000,1)) #creation of vector 0 relating to the test belonging to the not-mnist
+T=np.zeros((10000,1)) #creation of vector of 0s relating to the test belonging to the mnist
+F=np.ones((10000,1)) #creation of vector of 1s relating to the test belonging to the not-mnist
 true=np.concatenate((T,F),axis=0)
 pred=np.concatenate((np.reshape(reconstruction_loss,(10000,1)),np.reshape(reconstruction_loss_not,(10000,1))),axis=0)
 pred=(pred-np.min(pred))/(np.max(pred)-np.min(pred)) #normalization of the scores
